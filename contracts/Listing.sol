@@ -24,6 +24,24 @@ contract Listing {
         creator = _creator;
     }
 
+    /**
+    * Listing return values are indexed in the following order:
+    * [0] -> title
+    * [1] -> price
+    * [2] -> deadline
+    * [3] -> creator
+    * [4] -> parent marketplace address
+    * [5] -> Listing (address)
+    */
+    function getListing() returns (string, uint, uint, address, address, address) {
+        return (title,
+                price,
+                deadline,
+                creator,
+                marketplace,
+                address(this));
+    }
+
     function kill() public onlyMarketplace {
         selfdestruct(marketplace);
     } 

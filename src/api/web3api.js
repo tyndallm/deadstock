@@ -1,26 +1,30 @@
-import Web3 from 'web3';
+import Web3 from 'web3'
 
-import truffleConfig from '../../../truffle.js';
 import {getExtendedWeb3Provider} from '../util/utils.js';
 import MarketplaceContract from '../../build/contracts/Marketplace.json';
 import ListingContract from '../../build/contracts/Listing.json';
 
 const contract = require('truffle-contract');
 
-let web3Location = `http://${truffleConfig.rpc.host}:${truffleConfig.rpc.port}`;
 let web3Provided;
 
 let marketplaceInstance;
+let listingInstance;
 
 function initializeWeb3() {
+    /*eslint-disable */
     if (typeof web3 !== 'undefined') {
         web3Provided = new Web3(web3.currentProvider);
     } else {
-        web3Provided = new Web3(new Web3.providers.HttpProvider(web3Location));
+        web3Provided = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
     }    
+    /*eslint-enable */
 
     marketplaceInstance = contract(MarketplaceContract);
+    listingInstance = contract(ListingContract);
+
     marketplaceInstance.setProvider(web3Provided);
+    listingInstance.setProvider(web3Provided);
 
     return getExtendedWeb3Provider(web3Provided);
 }
@@ -75,19 +79,35 @@ export function getListings() {
 
             let array = Array.apply(null, {length: listingCount}).map(Number.call, Number);
             let listingPromises = array.map((id => {
-                return getProjectAddress(id);
+                return getListingAddress(id);
             }));
 
-            Promise.all(projectPromises).then((projectAddresses) => {
-                let projectDetailPromises = projectAddresses.map((address => {
-                    return getProjectDetails(address);
+            Promise.all(listingPromises).then((listingAddresses) => {
+                let listingDetailPromises = listingAddresses.map((address => {
+                    return getListingDetails(address);
                 }));
 
-                Promise.all(projectDetailPromises).then((projects) => {
-                    resolve(projects);
+                Promise.all(listingDetailPromises).then((listings) => {
+                    resolve(listings);
                 });
             });
         });
+    });
+}
+
+export function getListingDetails(address) {
+    return new Promise((resolve, reject) => {
+        let listing = listingInstance.at(address);
+        listing.getListing.call().then(function(listingDetails) {
+            resolve({
+                title: listingDetails[0],
+                price: listingDetails[1].toNumber(),
+                deadline: listingDetails[2].toNumber(),
+                creator: listingDetails[3],
+                marketplace: listingDetails[4],
+                address: listingDetails[5],
+            })
+        })
     });
 }
 
