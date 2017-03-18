@@ -3,10 +3,11 @@ import React, { Component } from 'react'
 class Dashboard extends Component {
   constructor(props, { authData }) {
     super(props)
-    this.props.authData = authData
+    //this.props.authData = authData //not sure why this is here
   }
 
   render() {
+    console.log(this.props);
     return(
       <main className="container">
         <div className="pure-g">
