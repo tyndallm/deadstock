@@ -3,9 +3,14 @@ import { Link } from 'react-router';
 import { HiddenOnlyAuth, VisibleOnlyAuth } from './util/wrappers.js';
 import {connect} from 'react-redux';
 
+import {Grid, Col, Row, Alert} from 'react-bootstrap';
+
 // UI Components
 import LoginButtonContainer from './user/ui/loginbutton/LoginButtonContainer';
 import LogoutButtonContainer from './user/ui/logoutbutton/LogoutButtonContainer';
+
+import Header from './components/header';
+
 import { fetchAccountsAndBalances, 
     fetchCurrentBlockNumber,
     fetchCurrentNetwork } from './actions/userActions';
@@ -27,10 +32,29 @@ class App extends Component {
     }
 
     render() {
-        console.log(this.props);
+        const { user } = this.props;
+
+        let currentUser = {};
+        if (user.accounts.length > 0) {
+            currentUser = user.accounts[user.selectedAccount];
+        }
+
+        let content = (
+            <div>
+                <Grid>
+                    <Row>
+                        <Col xs={12} md={12}>
+                            {this.props.children}
+                        </Col>
+                    </Row>
+                </Grid>
+            </div>
+        )
+
         return (
-            <div className="App">
-                {this.props.children}
+            <div>
+                <Header user={user}></Header>
+                {content}
             </div>
         );
     }
@@ -75,8 +99,9 @@ class App extends Component {
 
 function mapStateToProps(state) {
     return {
-        currentBlock: state.other.currentBlock,
-        network: state.other.network
+        currentBlock: state.user.currentBlock,
+        network: state.user.network,
+        user: state.user,
     }
 }
 

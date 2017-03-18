@@ -15,13 +15,16 @@ const createSuccessReducer = (property) => (state, action) => {
 }
 
 export const failureReducer = (state, action) => {
+    console.log(action.payload);
     return Object.assign({}, state, {
         isFetching: false,
         fetchComplete: true,
-        error: action.payload
+        error: action.payload.message
     });
 }
 
 export const fetchAccountsSuccessReducer = createSuccessReducer("accounts");
 export const fetchBlockSuccessReducer = createSuccessReducer("currentBlock");
 export const fetchNetworkSuccessReducer = createSuccessReducer("network");
+
+export const fetchListingsSuccessReducer = createSuccessReducer("listings");

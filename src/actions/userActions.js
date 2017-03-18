@@ -11,6 +11,7 @@ export const fetchNetworkRequest = "@@user/FETCH_NETWORK_REQUEST";
 export const fetchNetworkSuccess = "@@user/FETCH_NETWORK_SUCCESS";
 export const fetchNetworkFailure = "@@user/FETCH_NETWORK_FAILURE";
 export const selectAccount = "@@user/SELECT_ACCOUNT";
+export const userLoggedIn = "@@user/USER_LOGGED_IN";
 
 export function fetchAccountsAndBalances() {
     return {

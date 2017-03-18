@@ -3,13 +3,20 @@ import Web3 from 'web3'
 import {getExtendedWeb3Provider} from '../util/utils.js';
 import MarketplaceContract from '../../build/contracts/Marketplace.json';
 import ListingContract from '../../build/contracts/Listing.json';
+import AuthenticationContract from '../../build/contracts/Authentication.json';
 
 const contract = require('truffle-contract');
 
 let web3Provided;
 
-let marketplaceInstance;
-let listingInstance;
+var listingInstance, authenticationInstance;
+
+const marketplace = contract(MarketplaceContract);
+marketplace.setProvider(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+const listing = contract(ListingContract);
+listing.setProvider(new Web3.providers.HttpProvider("http://localhost:8545"));
+
 
 function initializeWeb3() {
     /*eslint-disable */
@@ -20,11 +27,8 @@ function initializeWeb3() {
     }    
     /*eslint-enable */
 
-    marketplaceInstance = contract(MarketplaceContract);
-    listingInstance = contract(ListingContract);
-
-    marketplaceInstance.setProvider(web3Provided);
-    listingInstance.setProvider(web3Provided);
+    authenticationInstance = contract(AuthenticationContract);
+    authenticationInstance.setProvider(web3Provided);
 
     return getExtendedWeb3Provider(web3Provided);
 }
@@ -71,18 +75,46 @@ export function getAccountBalance(account) {
     });
 }
 
+export function login(userAddress) {
+    return new Promise((resolve, reject) => {
+        let authentication = authenticationInstance.deployed();
+        authentication.login.call({from: userAddress}).then(function(result) {
+            let userName = web3Client().toUtf8(result);
+            resolve(userName);
+        }).catch(function(result) {
+            console.log("There was an error logging in: ", result);
+            reject(result);
+        });
+    });
+}
+
+export function signUp(username, userAddress) {
+    return new Promise((resolve, reject) => {
+        let authentication = authenticationInstance.deployed();
+        authentication.signup.call(username, {from: userAddress}).then(function(result) {
+            resolve(result);
+        }).catch(function(result) {
+            console.log("There was an error signing up: ", result);
+            reject(result);
+        });
+    });
+}
+
 export function getListings() {
     return new Promise((resolve, reject) => {
-        let marketplace = marketplaceInstance.deployed();
-        marketplace.numOfListings.call().then(function(num) {
-            let listingCount = num.valueOf();
-
-            let array = Array.apply(null, {length: listingCount}).map(Number.call, Number);
-            let listingPromises = array.map((id => {
+        let marketplaceInstance;
+        marketplace.deployed().then(function(instance) {
+            marketplaceInstance = instance;
+            return instance.numOfListings.call();
+        }).then(function(result) {
+            let listingsCount = result.valueOf();
+            
+            let array = Array.apply(null, {length: listingsCount}).map(Number.call, Number);
+            let listingsPromises = array.map((id => {
                 return getListingAddress(id);
             }));
 
-            Promise.all(listingPromises).then((listingAddresses) => {
+            Promise.all(listingsPromises).then((listingAddresses) => {
                 let listingDetailPromises = listingAddresses.map((address => {
                     return getListingDetails(address);
                 }));
@@ -91,30 +123,33 @@ export function getListings() {
                     resolve(listings);
                 });
             });
-        });
+        });    
     });
 }
 
 export function getListingDetails(address) {
     return new Promise((resolve, reject) => {
-        let listing = listingInstance.at(address);
-        listing.getListing.call().then(function(listingDetails) {
-            resolve({
-                title: listingDetails[0],
-                price: listingDetails[1].toNumber(),
-                deadline: listingDetails[2].toNumber(),
-                creator: listingDetails[3],
-                marketplace: listingDetails[4],
-                address: listingDetails[5],
-            })
-        })
+        listing.at(address).then(function(instance) {
+            instance.getListing.call().then(function(listingDetails) {
+                resolve({
+                    title: listingDetails[0],
+                    price: listingDetails[1].toNumber(),
+                    deadline: listingDetails[2].toNumber(),
+                    creator: listingDetails[3],
+                    marketplace: listingDetails[4],
+                    address: listingDetails[5],
+                });
+            });
+        });
     });
 }
 
 function getListingAddress(id) {
     return new Promise((resolve, reject) => {
-        let marketplace = marketplaceInstance.deployed();
-        marketplace.listings.call(id).then(function(address) {
+        marketplace.deployed().then(function(instance) {
+            instance.listings.call(id);
+        })
+        .then(function(address) {
             resolve(address);
         });
     });
@@ -151,9 +186,12 @@ export function fromWei(weiValue) {
 }
 
 export function getMarketplaceAddress() {
-    let address = marketplaceInstance.deployed().address;
-    console.log(address);
-    return address;
+    return new Promise((resolve, reject) => {
+        marketplace.deployed().then(function(instance) {
+            console.log("markeplace address: ", instance.address);
+            resolve(instance.address);
+        })
+    });
 }
 
 

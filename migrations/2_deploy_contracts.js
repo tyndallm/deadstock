@@ -9,5 +9,6 @@ module.exports = function(deployer) {
   deployer.deploy(Killable);
   deployer.link(Killable, Authentication);
   deployer.deploy(Authentication);
+  deployer.link(Authentication, Marketplace);
   deployer.deploy(Marketplace);
 };

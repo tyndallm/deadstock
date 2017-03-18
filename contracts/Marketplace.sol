@@ -6,7 +6,7 @@ import './Listing.sol';
 contract Marketplace is Killable{
     
     address public owner;
-    uint numOfListings;
+    uint public numOfListings;
 
     mapping (uint => address) public listings;
 
