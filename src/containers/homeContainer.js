@@ -1,6 +1,8 @@
 import React from 'react';
 import {connect} from 'react-redux';
 
+import * as Web3Api from '../api/web3api.js'; // temporary
+
 import {Jumbotron, Button, Alert} from 'react-bootstrap';
 
 import ListingsTable from '../components/listingsTable';
@@ -22,9 +24,17 @@ class HomeContainer extends React.Component {
 
     handleCreateListingBtnClicked() {
         console.log("Create lisiting clicked");
+        const {user} = _this.props;
+        let currentUser = {};
+        if (user.accounts.length > 0) {
+            currentUser = user.accounts[user.selectedAccount];
+            Web3Api.createListing("Test listing", Web3Api.toWei(10), 38117, currentUser.address);
+        }
+        
     }
 
     render() {
+        console.log(this.props);
         return (
             <div>
                 <Jumbotron>
@@ -41,7 +51,8 @@ class HomeContainer extends React.Component {
 function mapStateToProps(state) {
     return {
         marketplace: state.marketplace,
-        currentBlock: state.user.currentBlock
+        currentBlock: state.user.currentBlock,
+        user: state.user
     }
 }
 

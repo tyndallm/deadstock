@@ -155,6 +155,25 @@ function getListingAddress(id) {
     });
 }
 
+export function createListing(title, price, deadline, creator) {
+    return new Promise((resolve, reject) => {
+        marketplace.deployed().then(function(instance) {
+            instance.createListing(price, deadline, title, { from: creator, gas: 1000000 })
+                .then(function(tx) {
+                    console.log("create listing tx: ", tx);
+                    return Promise.all([
+                        web3Client().eth.getTransactionReceiptMined(tx)
+                    ]);
+                })
+                .then(function(receipt) {
+                    console.log("[web3Api.marketplace.createListing] transaction mined: ", receipt);
+                    // TODO: create an event for this? ^
+                    resolve(receipt);
+                });
+        });
+    });
+}
+
 export function getCurrentBlockNumber() {
     return new Promise((resolve, reject) => {
         web3Client().eth.getBlockNumber(function (err, blockNum) {
