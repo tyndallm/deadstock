@@ -21,14 +21,33 @@ contract Marketplace is Killable{
     * Create a new Listing contract
     * [0] -> new Listing contract address
     */
-    function createListing(uint _price, uint _deadline, string _title) payable returns (Listing listingAddress) {
+    function createListing(uint _price, 
+                           uint _deadline, 
+                           string _title, 
+                           string _brand,
+                           string _size,
+                           string _style,
+                           string _color,
+                           string _imageUrl,
+                           string _condition,
+                           string _description) payable returns (Listing listingAddress) {
 
         if (_price <= 0) {
             LogFailure("Listing price must be greater than 0");
             throw;
         }
 
-        Listing l = new Listing(_price, _deadline, _title, msg.sender);
+        Listing l = new Listing(_price, 
+                                _deadline, 
+                                _title, 
+                                msg.sender,
+                                _brand,
+                                _size,
+                                _style,
+                                _color,
+                                _imageUrl,
+                                _condition,
+                                _description);
         listings[numOfListings] = l;
         numOfListings++;
         return l;

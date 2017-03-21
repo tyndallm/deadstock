@@ -108,6 +108,7 @@ export function getListings() {
             return instance.numOfListings.call();
         }).then(function(result) {
             let listingsCount = result.valueOf();
+            console.log("[web3Api.marketplace.getListings] number of listings: ", listingsCount);
             
             let array = Array.apply(null, {length: listingsCount}).map(Number.call, Number);
             let listingsPromises = array.map((id => {
@@ -116,7 +117,7 @@ export function getListings() {
 
             Promise.all(listingsPromises).then((listingAddresses) => {
                 let listingDetailPromises = listingAddresses.map((address => {
-                    return getListingDetails(address);
+                    return getListing(address);
                 }));
 
                 Promise.all(listingDetailPromises).then((listings) => {
@@ -127,38 +128,79 @@ export function getListings() {
     });
 }
 
-export function getListingDetails(address) {
+function getListingAddress(id) {
     return new Promise((resolve, reject) => {
-        listing.at(address).then(function(instance) {
+        marketplace.deployed().then(function(instance) {
+            return instance.listings.call(id);
+        })
+        .then(function(address) {
+            console.log("address: ", address);
+            resolve(address);
+        });
+    });
+}
+
+export function getListing(_address) {
+    return new Promise((resolve, reject) => {
+        listing.at(_address).then(function(instance) {
             instance.getListing.call().then(function(listingDetails) {
                 resolve({
                     title: listingDetails[0],
                     price: listingDetails[1].toNumber(),
                     deadline: listingDetails[2].toNumber(),
-                    creator: listingDetails[3],
-                    marketplace: listingDetails[4],
-                    address: listingDetails[5],
+                    address: listingDetails[4],
                 });
             });
         });
     });
 }
 
-function getListingAddress(id) {
+export function getItemDetails(address) {
     return new Promise((resolve, reject) => {
-        marketplace.deployed().then(function(instance) {
-            instance.listings.call(id);
-        })
-        .then(function(address) {
-            resolve(address);
+        listing.at(address).then(function(instance) {
+            instance.getDetails.call().then(function(itemDetails) {
+                resolve({
+                    brand: itemDetails[0],
+                    size: itemDetails[1],
+                    style: itemDetails[2],
+                    color: itemDetails[3],
+                    condition: itemDetails[4],
+                    description: itemDetails[5],
+                    imageUrl: itemDetails[6] 
+                });
+            });
         });
     });
 }
 
-export function createListing(title, price, deadline, creator) {
+export function getSeller(address) {
     return new Promise((resolve, reject) => {
+        listing.at(address).then(function(instance) {
+            instance.getSeller.call().then(function(seller) {
+                resolve({
+                    sellerAddress: seller[0],
+                    insurancePrice: seller[1]
+                });
+            });
+        });
+    });
+}
+
+export function createListing(listingInfo) {
+    return new Promise((resolve, reject) => {
+        let marketplaceInstance;
         marketplace.deployed().then(function(instance) {
-            instance.createListing(price, deadline, title, { from: creator, gas: 1000000 })
+            marketplaceInstance = instance;
+            marketplaceInstance.createListing(listingInfo.price, 
+                                              listingInfo.deadline, 
+                                              listingInfo.title, 
+                                              listingInfo.brand,
+                                              listingInfo.size,
+                                              listingInfo.style,
+                                              listingInfo.color,
+                                              listingInfo.imageUrl,
+                                              listingInfo.condition,
+                                              { from: listingInfo.creator, gas: 1000000 })
                 .then(function(tx) {
                     console.log("create listing tx: ", tx);
                     return Promise.all([
@@ -167,8 +209,11 @@ export function createListing(title, price, deadline, creator) {
                 })
                 .then(function(receipt) {
                     console.log("[web3Api.marketplace.createListing] transaction mined: ", receipt);
-                    // TODO: create an event for this? ^
-                    resolve(receipt);
+                    return marketplaceInstance.listings.call(0);
+                })
+                .then(function(contractAddr) {
+                    console.log("[web3Api.marketplace.createListing] new listing address: ", contractAddr);
+                    resolve(contractAddr);
                 });
         });
     });

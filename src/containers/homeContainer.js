@@ -7,7 +7,7 @@ import {Jumbotron, Button, Alert} from 'react-bootstrap';
 
 import ListingsTable from '../components/listingsTable';
 
-import { fetchListings } from '../actions/marketplaceActions';
+import { fetchListings, createListing } from '../actions/marketplaceActions';
 
 var _this;
 
@@ -24,11 +24,25 @@ class HomeContainer extends React.Component {
 
     handleCreateListingBtnClicked() {
         console.log("Create lisiting clicked");
-        const {user} = _this.props;
+        const {dispatch, user} = _this.props;
         let currentUser = {};
         if (user.accounts.length > 0) {
             currentUser = user.accounts[user.selectedAccount];
-            Web3Api.createListing("Test listing", Web3Api.toWei(10), 38117, currentUser.address);
+
+            let listingInfo = {
+                title: "Dunk Hight TRD QS Reese Forbes Denim", 
+                price: Web3Api.toWei(4.76), 
+                deadline: 38117, 
+                creator: currentUser.address,
+                brand: "Nike",
+                size: "12",
+                style: "881758-441",
+                color: "Midnight Navy",
+                imageUrl: "https://cdn.shopify.com/s/files/1/0563/1361/products/2-14-17ReeseForbesDenim1.jpg?v=1487360842",
+                condition: "deadstock",
+                description: "descript goes here"};
+
+            dispatch(createListing(listingInfo));
         }
         
     }
@@ -42,7 +56,7 @@ class HomeContainer extends React.Component {
                     <p>Checkout the listings below or create your own.</p>
                     <p><Button bsStyle="primary" onClick={_this.handleCreateListingBtnClicked}>Create a listing</Button></p>
                 </Jumbotron>
-                <ListingsTable/>
+                <ListingsTable listings={this.props.marketplace.listings}/>
             </div>
         );
     }

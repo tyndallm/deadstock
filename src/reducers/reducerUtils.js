@@ -14,6 +14,7 @@ const createSuccessReducer = (property) => (state, action) => {
     });
 }
 
+
 export const failureReducer = (state, action) => {
     console.log(action.payload);
     return Object.assign({}, state, {
@@ -27,4 +28,14 @@ export const fetchAccountsSuccessReducer = createSuccessReducer("accounts");
 export const fetchBlockSuccessReducer = createSuccessReducer("currentBlock");
 export const fetchNetworkSuccessReducer = createSuccessReducer("network");
 
+export const fetchListingSuccessReducer = createSuccessReducer("listing");
+export const fetchItemDetailsSuccessReducer = createSuccessReducer("details");
+
 export const fetchListingsSuccessReducer = createSuccessReducer("listings");
+
+export const createListingSuccessReducer = (property) => (state, action) => {
+    return Object.assign({}, state, {
+        isFetching: false,
+        fetchComplete: true,
+    });
+}

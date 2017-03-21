@@ -31,6 +31,38 @@ class App extends Component {
         dispatch(fetchCurrentNetwork());
     }
 
+    getNetworkStatusAlert(networkId, currentBlock) {
+        let alertStyle = "info";
+        let networkDisplayName = "network";
+
+        switch (networkId) {
+            case "1":
+                alertStyle = "danger";
+                networkDisplayName = "Mainnet";
+                break;
+            case "2":
+                alertStyle = "warning";
+                networkDisplayName = "Morden";
+                break;
+            case "42":
+                alertStyle = "info";
+                networkDisplayName = "Kovan";
+                break;
+            case "3":
+                alertStyle = "info";
+                networkDisplayName = "Ropsten";
+                break;
+            default:
+                break;
+        }
+
+        return (
+            <Alert bsStyle={alertStyle}>
+                <strong>Currently on {networkDisplayName} ({networkId})</strong> The current block is {currentBlock}.
+            </Alert>
+        );
+    }
+
     render() {
         const { user } = this.props;
 
@@ -39,11 +71,15 @@ class App extends Component {
             currentUser = user.accounts[user.selectedAccount];
         }
 
+        let currentBlockNum = this.props.currentBlock;
+        let network = this.props.network;
+
         let content = (
             <div>
                 <Grid>
                     <Row>
                         <Col xs={12} md={12}>
+                            {this.getNetworkStatusAlert(network, currentBlockNum)}
                             {this.props.children}
                         </Col>
                     </Row>
@@ -58,43 +94,6 @@ class App extends Component {
             </div>
         );
     }
-
-  // render() {
-  //   const OnlyAuthLinks = VisibleOnlyAuth(() =>
-  //     <span>
-  //       <li className="pure-menu-item">
-  //         <Link to="/dashboard" className="pure-menu-link">Dashboard</Link>
-  //       </li>
-  //       <li className="pure-menu-item">
-  //         <Link to="/profile" className="pure-menu-link">Profile</Link>
-  //       </li>
-  //       <LogoutButtonContainer />
-  //     </span>
-  //   )
-
-  //   const OnlyGuestLinks = HiddenOnlyAuth(() =>
-  //     <span>
-  //       <li className="pure-menu-item">
-  //         <Link to="/signup" className="pure-menu-link">Sign Up</Link>
-  //       </li>
-  //       <LoginButtonContainer />
-  //     </span>
-  //   )
-
-  //   return (
-  //     <div className="App">
-  //       <nav className="navbar pure-menu pure-menu-horizontal">
-  //         <Link to="/" className="pure-menu-heading pure-menu-link">Truffle Box</Link>
-  //         <ul className="pure-menu-list navbar-right">
-  //           <OnlyGuestLinks />
-  //           <OnlyAuthLinks />
-  //         </ul>
-  //       </nav>
-
-  //       {this.props.children}
-  //     </div>
-  //   );
-  // }
 }
 
 function mapStateToProps(state) {
