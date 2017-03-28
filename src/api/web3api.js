@@ -1,9 +1,10 @@
 import Web3 from 'web3'
 
 import {getExtendedWeb3Provider} from '../util/utils.js';
-import MarketplaceContract from '../../build/contracts/Marketplace.json';
 import ListingContract from '../../build/contracts/Listing.json';
 import AuthenticationContract from '../../build/contracts/Authentication.json';
+import StandardListingFactoryContract from '../../build/contracts/StandardListingFactory.json';
+import ListingRegistryContract from '../../build/contracts/ListingRegistry.json';
 
 const contract = require('truffle-contract');
 
@@ -11,11 +12,17 @@ let web3Provided;
 
 var listingInstance, authenticationInstance;
 
-const marketplace = contract(MarketplaceContract);
-marketplace.setProvider(new Web3.providers.HttpProvider("http://localhost:8545"));
+// const marketplace = contract(MarketplaceContract);
+// marketplace.setProvider(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+const listingRegistry = contract(ListingRegistryContract);
+listingRegistry.setProvider(new Web3.providers.HttpProvider("http://localhost:8545"));
 
 const listing = contract(ListingContract);
 listing.setProvider(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+const listingFactory = contract(StandardListingFactoryContract);
+listingFactory.setProvider(new Web3.providers.HttpProvider("http://localhost:8545"));
 
 
 function initializeWeb3() {
@@ -100,43 +107,57 @@ export function signUp(username, userAddress) {
     });
 }
 
+// export function getListings() {
+//     return new Promise((resolve, reject) => {
+//         let marketplaceInstance;
+//         marketplace.deployed().then(function(instance) {
+//             marketplaceInstance = instance;
+//             return instance.numOfListings.call();
+//         }).then(function(result) {
+//             let listingsCount = result.valueOf();
+//             console.log("[web3Api.marketplace.getListings] number of listings: ", listingsCount);
+            
+//             let array = Array.apply(null, {length: listingsCount}).map(Number.call, Number);
+//             let listingsPromises = array.map((id => {
+//                 return getListingAddress(id);
+//             }));
+
+//             Promise.all(listingsPromises).then((listingAddresses) => {
+//                 let listingDetailPromises = listingAddresses.map((address => {
+//                     return getListing(address);
+//                 }));
+
+//                 Promise.all(listingDetailPromises).then((listings) => {
+//                     resolve(listings);
+//                 });
+//             });
+//         });    
+//     });
+// }
+
 export function getListings() {
     return new Promise((resolve, reject) => {
-        let marketplaceInstance;
-        marketplace.deployed().then(function(instance) {
-            marketplaceInstance = instance;
-            return instance.numOfListings.call();
+        let listingRegistryInstance;
+        listingRegistry.deployed().then(function(instance) {
+            listingRegistryInstance = instance;
+            return listingRegistryInstance.numListings.call();
         }).then(function(result) {
             let listingsCount = result.valueOf();
-            console.log("[web3Api.marketplace.getListings] number of listings: ", listingsCount);
-            
-            let array = Array.apply(null, {length: listingsCount}).map(Number.call, Number);
-            let listingsPromises = array.map((id => {
-                return getListingAddress(id);
-            }));
-
-            Promise.all(listingsPromises).then((listingAddresses) => {
-                let listingDetailPromises = listingAddresses.map((address => {
-                    return getListing(address);
-                }));
-
-                Promise.all(listingDetailPromises).then((listings) => {
-                    resolve(listings);
-                });
-            });
-        });    
-    });
+            console.log("numListings: ", listingsCount);
+            resolve(listingsCount);
+        });
+    })
 }
 
 function getListingAddress(id) {
     return new Promise((resolve, reject) => {
-        marketplace.deployed().then(function(instance) {
-            return instance.listings.call(id);
-        })
-        .then(function(address) {
-            console.log("address: ", address);
-            resolve(address);
-        });
+        // marketplace.deployed().then(function(instance) {
+        //     return instance.listings.call(id);
+        // })
+        // .then(function(address) {
+        //     console.log("address: ", address);
+        //     resolve(address);
+        // });
     });
 }
 
@@ -189,33 +210,33 @@ export function getSeller(address) {
 export function createListing(listingInfo) {
     return new Promise((resolve, reject) => {
         let marketplaceInstance;
-        marketplace.deployed().then(function(instance) {
-            marketplaceInstance = instance;
-            marketplaceInstance.createListing(listingInfo.price, 
-                                              listingInfo.deadline, 
-                                              listingInfo.title, 
-                                              listingInfo.brand,
-                                              listingInfo.size,
-                                              listingInfo.style,
-                                              listingInfo.color,
-                                              listingInfo.imageUrl,
-                                              listingInfo.condition,
-                                              { from: listingInfo.creator, gas: 1000000 })
-                .then(function(tx) {
-                    console.log("create listing tx: ", tx);
-                    return Promise.all([
-                        web3Client().eth.getTransactionReceiptMined(tx)
-                    ]);
-                })
-                .then(function(receipt) {
-                    console.log("[web3Api.marketplace.createListing] transaction mined: ", receipt);
-                    return marketplaceInstance.listings.call(0);
-                })
-                .then(function(contractAddr) {
-                    console.log("[web3Api.marketplace.createListing] new listing address: ", contractAddr);
-                    resolve(contractAddr);
-                });
-        });
+        // marketplace.deployed().then(function(instance) {
+        //     marketplaceInstance = instance;
+        //     marketplaceInstance.createListing(listingInfo.price, 
+        //                                       listingInfo.deadline, 
+        //                                       listingInfo.title, 
+        //                                       listingInfo.brand,
+        //                                       listingInfo.size,
+        //                                       listingInfo.style,
+        //                                       listingInfo.color,
+        //                                       listingInfo.imageUrl,
+        //                                       listingInfo.condition,
+        //                                       { from: listingInfo.creator, gas: 1000000 })
+        //         .then(function(tx) {
+        //             console.log("create listing tx: ", tx);
+        //             return Promise.all([
+        //                 web3Client().eth.getTransactionReceiptMined(tx)
+        //             ]);
+        //         })
+        //         .then(function(receipt) {
+        //             console.log("[web3Api.marketplace.createListing] transaction mined: ", receipt);
+        //             return marketplaceInstance.listings.call(0);
+        //         })
+        //         .then(function(contractAddr) {
+        //             console.log("[web3Api.marketplace.createListing] new listing address: ", contractAddr);
+        //             resolve(contractAddr);
+        //         });
+        // });
     });
 }
 
@@ -251,10 +272,10 @@ export function fromWei(weiValue) {
 
 export function getMarketplaceAddress() {
     return new Promise((resolve, reject) => {
-        marketplace.deployed().then(function(instance) {
-            console.log("markeplace address: ", instance.address);
-            resolve(instance.address);
-        })
+        // marketplace.deployed().then(function(instance) {
+        //     console.log("markeplace address: ", instance.address);
+        //     resolve(instance.address);
+        // })
     });
 }
 

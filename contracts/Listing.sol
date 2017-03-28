@@ -18,6 +18,8 @@ contract Listing {
 
     function name() public constant returns(string) {}
 
+    function description() public constant returns(string) {}
+
     function paymentMethodABI() public constant returns(string) {}
 
     function payoutMethodABI() public constant returns(string) {}

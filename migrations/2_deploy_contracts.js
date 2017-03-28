@@ -1,7 +1,12 @@
 var Ownable = artifacts.require("./zeppelin/ownership/Ownable.sol");
 var Killable = artifacts.require("./zeppelin/lifecycle/Killable.sol");
 var Authentication = artifacts.require("./Authentication.sol");
-var Marketplace = artifacts.require("./Marketplace.sol");
+
+var PrivateServiceRegistry = artifacts.require("./weifund/PrivateServiceRegistry.sol");
+
+var ListingRegistry = artifacts.require("./ListingRegistry.sol");
+var StandardListingFactory = artifacts.require("./StandardListingFactory.sol");
+
 
 module.exports = function(deployer) {
   deployer.deploy(Ownable);
@@ -9,6 +14,8 @@ module.exports = function(deployer) {
   deployer.deploy(Killable);
   deployer.link(Killable, Authentication);
   deployer.deploy(Authentication);
-  deployer.link(Authentication, Marketplace);
-  deployer.deploy(Marketplace);
+  deployer.deploy(PrivateServiceRegistry);
+  deployer.link(PrivateServiceRegistry, StandardListingFactory);
+  deployer.deploy(StandardListingFactory);
+  deployer.deploy(ListingRegistry);
 };

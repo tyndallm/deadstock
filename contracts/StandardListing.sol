@@ -124,6 +124,7 @@ contract StandardListing is Killable, Listing {
 
     // the contract constructor
     function StandardListing(string _name,
+        string _description,
         uint256 _expiry,
         uint256 _price,
         address _beneficiary,
@@ -131,6 +132,8 @@ contract StandardListing is Killable, Listing {
 
         // set the listing _name
         name = _name;
+
+        description = _description;
 
         // the listing expiry in blocks
         expiry = _expiry;
@@ -184,12 +187,14 @@ contract StandardListing is Killable, Listing {
 
     string public name;
 
-    string constant public version = "0.1.0";
+    string public description;
 
-    // the payment method ABI as a string, written in standard solidity
-    // ABI format, this is generally used so that UI's can understand the listing
-    string constant public paymentMethodABI = "payMsgValue(uint256[]):(uint256)";
+    // string constant public version = "0.1.0";
 
-    // the payout to beneficiary ABI, written in standard solidity ABI format
-    string constant public payoutMethodABI = "payoutToBeneficiary(bool)";
+    // // the payment method ABI as a string, written in standard solidity
+    // // ABI format, this is generally used so that UI's can understand the listing
+    // string constant public paymentMethodABI = "payMsgValue(uint256[]):(uint256)";
+
+    // // the payout to beneficiary ABI, written in standard solidity ABI format
+    // string constant public payoutMethodABI = "payoutToBeneficiary(bool)";
 }
